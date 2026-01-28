@@ -460,7 +460,10 @@ function ContractFlowContent() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-2xl mx-auto px-6 py-6">
+      <div className={cn(
+        "mx-auto px-6 py-6",
+        phase === "analysis" ? "max-w-5xl pb-24" : "max-w-2xl"
+      )}>
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <button onClick={() => router.push("/")} className="p-2 hover:bg-slate-100 rounded-lg">
@@ -482,20 +485,21 @@ function ContractFlowContent() {
             {/* Quick Goal Pills */}
             <div className="flex flex-wrap gap-2 mb-3">
               {[
-                { label: "NDA", goal: "Create a mutual NDA to protect confidential information", color: "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100" },
-                { label: "Service Agreement", goal: "Draft a service agreement for professional services delivery", color: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" },
-                { label: "Statement of Work", goal: "Create a detailed SOW with milestones and deliverables", color: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" },
-                { label: "Partnership", goal: "Establish a partnership agreement for collaboration", color: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" },
-                { label: "Consulting", goal: "Draft a consulting agreement for advisory services", color: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100" },
-                { label: "MSA", goal: "Create a master service agreement for ongoing relationship", color: "bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100" },
+                { label: "NDA", goal: "Create a mutual NDA to protect confidential information" },
+                { label: "Service Agreement", goal: "Draft a service agreement for professional services delivery" },
+                { label: "Statement of Work", goal: "Create a detailed SOW with milestones and deliverables" },
+                { label: "Partnership", goal: "Establish a partnership agreement for collaboration" },
+                { label: "Consulting", goal: "Draft a consulting agreement for advisory services" },
+                { label: "MSA", goal: "Create a master service agreement for ongoing relationship" },
               ].map((option) => (
                 <button
                   key={option.label}
                   onClick={() => setGoal(option.goal)}
                   className={cn(
                     "px-3 py-1.5 text-sm font-medium rounded-full border transition-all",
-                    option.color,
-                    goal === option.goal && "ring-2 ring-offset-1 ring-slate-400"
+                    goal === option.goal
+                      ? "bg-slate-900 text-white border-slate-900"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
                   )}
                 >
                   {option.label}
@@ -538,7 +542,7 @@ function ContractFlowContent() {
               className={cn(
                 "w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all",
                 (goal.trim() || uploadedFile)
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25"
+                  ? "bg-slate-900 text-white hover:bg-slate-800"
                   : "bg-slate-100 text-slate-400"
               )}
             >
@@ -558,235 +562,232 @@ function ContractFlowContent() {
 
         {/* Analysis Phase */}
         {phase === "analysis" && editableAnalysis && (
-          <div className="space-y-4">
-            {/* Contract Type */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 overflow-hidden">
-              <div className="px-4 py-2 bg-indigo-100/50 border-b border-indigo-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-indigo-600" />
-                  <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide">Contract Type</span>
-                </div>
-                <button
-                  onClick={() => setEditingField(editingField === "contractType" ? null : "contractType")}
-                  className="p-1 hover:bg-indigo-200/50 rounded transition-colors"
-                >
-                  <Pencil className="w-3.5 h-3.5 text-indigo-500" />
-                </button>
-              </div>
-              <div className="p-4">
-                <p className="font-semibold text-slate-900">{getContractTypeLabel(editableAnalysis.contractType)}</p>
-                <p className="text-sm text-slate-500 mt-1">{goal}</p>
-              </div>
-            </div>
-
-            {/* History TLDR */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100 overflow-hidden">
-              <div className="px-4 py-2 bg-blue-100/50 border-b border-blue-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">History</span>
-                </div>
-                <button
-                  onClick={() => setEditingField(editingField === "history" ? null : "history")}
-                  className="p-1 hover:bg-blue-200/50 rounded transition-colors"
-                >
-                  <Pencil className="w-3.5 h-3.5 text-blue-500" />
-                </button>
-              </div>
-              <div className="p-4">
-                {editingField === "history" ? (
-                  <textarea
-                    value={editableAnalysis.history.summary}
-                    onChange={(e) => setEditableAnalysis({
-                      ...editableAnalysis,
-                      history: { ...editableAnalysis.history, summary: e.target.value }
-                    })}
-                    className="w-full px-3 py-2 text-sm bg-white border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                    rows={2}
-                  />
-                ) : (
-                  <p className="text-sm text-slate-600">{editableAnalysis.history.summary}</p>
-                )}
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="px-2 py-0.5 bg-white/70 text-blue-700 text-xs font-medium rounded-full">{editableAnalysis.history.contracts} contracts</span>
-                  <span className="px-2 py-0.5 bg-white/70 text-blue-700 text-xs font-medium rounded-full">{editableAnalysis.history.successRate}% success</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Risk */}
-            <div className={cn(
-              "rounded-xl border overflow-hidden",
-              editableAnalysis.risk.level === "low"
-                ? "bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-100"
-                : editableAnalysis.risk.level === "medium"
-                ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-100"
-                : "bg-gradient-to-r from-red-50 to-rose-50 border-red-100"
-            )}>
-              <div className={cn(
-                "px-4 py-2 border-b flex items-center justify-between",
-                editableAnalysis.risk.level === "low" ? "bg-emerald-100/50 border-emerald-100" :
-                editableAnalysis.risk.level === "medium" ? "bg-amber-100/50 border-amber-100" : "bg-red-100/50 border-red-100"
-              )}>
-                <div className="flex items-center gap-2">
-                  {editableAnalysis.risk.level === "low" ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <AlertCircle className={cn("w-4 h-4", editableAnalysis.risk.level === "medium" ? "text-amber-600" : "text-red-600")} />
-                  )}
-                  <span className={cn(
-                    "text-xs font-bold uppercase tracking-wide",
-                    editableAnalysis.risk.level === "low" ? "text-emerald-700" :
-                    editableAnalysis.risk.level === "medium" ? "text-amber-700" : "text-red-700"
-                  )}>
-                    {editableAnalysis.risk.level} Risk
-                  </span>
-                </div>
-                <button
-                  onClick={() => setEditingField(editingField === "risk" ? null : "risk")}
-                  className={cn(
-                    "p-1 rounded transition-colors",
-                    editableAnalysis.risk.level === "low" ? "hover:bg-emerald-200/50" :
-                    editableAnalysis.risk.level === "medium" ? "hover:bg-amber-200/50" : "hover:bg-red-200/50"
-                  )}
-                >
-                  <Pencil className={cn(
-                    "w-3.5 h-3.5",
-                    editableAnalysis.risk.level === "low" ? "text-emerald-500" :
-                    editableAnalysis.risk.level === "medium" ? "text-amber-500" : "text-red-500"
-                  )} />
-                </button>
-              </div>
-              <div className="p-4">
-                {editingField === "risk" ? (
-                  <textarea
-                    value={editableAnalysis.risk.reason}
-                    onChange={(e) => setEditableAnalysis({
-                      ...editableAnalysis,
-                      risk: { ...editableAnalysis.risk, reason: e.target.value }
-                    })}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"
-                    rows={2}
-                  />
-                ) : (
-                  <p className="text-sm text-slate-600">{editableAnalysis.risk.reason}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Key Clauses */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-slate-600" />
-                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Key Clauses</span>
-                </div>
-                <button
-                  onClick={() => setEditingField(editingField === "clauses" ? null : "clauses")}
-                  className="p-1 hover:bg-slate-200/50 rounded transition-colors"
-                >
-                  <Pencil className="w-3.5 h-3.5 text-slate-500" />
-                </button>
-              </div>
-              <div className="p-4 space-y-2">
-                {editableAnalysis.clauses.map((clause, i) => (
-                  <div key={i} className="flex justify-between items-center text-sm py-2 px-3 bg-slate-50 rounded-lg">
-                    <span className="text-slate-500">{clause.title}</span>
-                    {editingField === "clauses" ? (
-                      <input
-                        type="text"
-                        value={clause.recommendation}
-                        onChange={(e) => {
-                          const newClauses = [...editableAnalysis.clauses];
-                          newClauses[i] = { ...newClauses[i], recommendation: e.target.value };
-                          setEditableAnalysis({ ...editableAnalysis, clauses: newClauses });
-                        }}
-                        className="px-2 py-1 text-sm bg-white border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 text-right w-40"
-                      />
-                    ) : (
-                      <span className="text-slate-900 font-medium">{clause.recommendation}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* News & Solvency row */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* News - now shows 2 articles */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex gap-6">
+            {/* Left side - Analysis */}
+            <div className="flex-1 space-y-3">
+              {/* Contract Type */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Newspaper className="w-4 h-4 text-slate-600" />
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">In the News</span>
+                    <Shield className="w-4 h-4 text-slate-500" />
+                    <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Contract Type</span>
                   </div>
-                  <span className="text-xs text-slate-400">+{editableAnalysis.totalNewsCount - 2} more</span>
+                  <button
+                    onClick={() => setEditingField(editingField === "contractType" ? null : "contractType")}
+                    className="p-1 hover:bg-slate-200 rounded transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
                 </div>
-                <div className="p-3 space-y-2">
-                  {editableAnalysis.news.map((item, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "p-2 rounded-lg text-xs",
-                        item.sentiment === "positive" ? "bg-green-50" :
-                        item.sentiment === "negative" ? "bg-red-50" : "bg-slate-50"
+                <div className="p-4">
+                  <p className="font-semibold text-slate-900">{getContractTypeLabel(editableAnalysis.contractType)}</p>
+                  <p className="text-sm text-slate-500 mt-1">{goal}</p>
+                </div>
+              </div>
+
+              {/* History */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-slate-500" />
+                    <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">History</span>
+                  </div>
+                  <button
+                    onClick={() => setEditingField(editingField === "history" ? null : "history")}
+                    className="p-1 hover:bg-slate-200 rounded transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                </div>
+                <div className="p-4">
+                  {editingField === "history" ? (
+                    <textarea
+                      value={editableAnalysis.history.summary}
+                      onChange={(e) => setEditableAnalysis({
+                        ...editableAnalysis,
+                        history: { ...editableAnalysis.history, summary: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"
+                      rows={2}
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-600">{editableAnalysis.history.summary}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-full">{editableAnalysis.history.contracts} contracts</span>
+                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-full">{editableAnalysis.history.successRate}% success</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Risk - keeps RAG colors */}
+              <div className={cn(
+                "rounded-xl border overflow-hidden",
+                editableAnalysis.risk.level === "low"
+                  ? "bg-emerald-50 border-emerald-200"
+                  : editableAnalysis.risk.level === "medium"
+                  ? "bg-amber-50 border-amber-200"
+                  : "bg-red-50 border-red-200"
+              )}>
+                <div className={cn(
+                  "px-4 py-2 border-b flex items-center justify-between",
+                  editableAnalysis.risk.level === "low" ? "bg-emerald-100 border-emerald-200" :
+                  editableAnalysis.risk.level === "medium" ? "bg-amber-100 border-amber-200" : "bg-red-100 border-red-200"
+                )}>
+                  <div className="flex items-center gap-2">
+                    {editableAnalysis.risk.level === "low" ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className={cn("w-4 h-4", editableAnalysis.risk.level === "medium" ? "text-amber-600" : "text-red-600")} />
+                    )}
+                    <span className={cn(
+                      "text-xs font-semibold uppercase tracking-wide",
+                      editableAnalysis.risk.level === "low" ? "text-emerald-700" :
+                      editableAnalysis.risk.level === "medium" ? "text-amber-700" : "text-red-700"
+                    )}>
+                      {editableAnalysis.risk.level} Risk
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setEditingField(editingField === "risk" ? null : "risk")}
+                    className="p-1 hover:bg-white/50 rounded transition-colors"
+                  >
+                    <Pencil className={cn(
+                      "w-3.5 h-3.5",
+                      editableAnalysis.risk.level === "low" ? "text-emerald-500" :
+                      editableAnalysis.risk.level === "medium" ? "text-amber-500" : "text-red-500"
+                    )} />
+                  </button>
+                </div>
+                <div className="p-4">
+                  {editingField === "risk" ? (
+                    <textarea
+                      value={editableAnalysis.risk.reason}
+                      onChange={(e) => setEditableAnalysis({
+                        ...editableAnalysis,
+                        risk: { ...editableAnalysis.risk, reason: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"
+                      rows={2}
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-600">{editableAnalysis.risk.reason}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Key Clauses */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-slate-500" />
+                    <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Key Clauses</span>
+                  </div>
+                  <button
+                    onClick={() => setEditingField(editingField === "clauses" ? null : "clauses")}
+                    className="p-1 hover:bg-slate-200 rounded transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                </div>
+                <div className="p-4 space-y-2">
+                  {editableAnalysis.clauses.map((clause, i) => (
+                    <div key={i} className="flex justify-between items-center text-sm py-2 px-3 bg-slate-50 rounded-lg">
+                      <span className="text-slate-500">{clause.title}</span>
+                      {editingField === "clauses" ? (
+                        <input
+                          type="text"
+                          value={clause.recommendation}
+                          onChange={(e) => {
+                            const newClauses = [...editableAnalysis.clauses];
+                            newClauses[i] = { ...newClauses[i], recommendation: e.target.value };
+                            setEditableAnalysis({ ...editableAnalysis, clauses: newClauses });
+                          }}
+                          className="px-2 py-1 text-sm bg-white border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-400 text-right w-40"
+                        />
+                      ) : (
+                        <span className="text-slate-900 font-medium">{clause.recommendation}</span>
                       )}
-                    >
-                      <p className={cn(
-                        "font-medium line-clamp-1",
-                        item.sentiment === "positive" ? "text-green-700" :
-                        item.sentiment === "negative" ? "text-red-700" : "text-slate-700"
-                      )}>
-                        {item.headline}
-                      </p>
-                      <p className="text-slate-400 mt-0.5">{item.date}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Solvency */}
-              <div className={cn(
-                "rounded-xl border overflow-hidden",
-                editableAnalysis.solvency.status === "strong"
-                  ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100"
-                  : editableAnalysis.solvency.status === "stable"
-                  ? "bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100"
-                  : "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-100"
-              )}>
-                <div className={cn(
-                  "px-3 py-2 border-b flex items-center gap-2",
-                  editableAnalysis.solvency.status === "strong" ? "bg-emerald-100/50 border-emerald-100" :
-                  editableAnalysis.solvency.status === "stable" ? "bg-blue-100/50 border-blue-100" : "bg-amber-100/50 border-amber-100"
-                )}>
-                  <DollarSign className={cn(
-                    "w-4 h-4",
-                    editableAnalysis.solvency.status === "strong" ? "text-emerald-600" :
-                    editableAnalysis.solvency.status === "stable" ? "text-blue-600" : "text-amber-600"
-                  )} />
-                  <span className={cn(
-                    "text-xs font-bold uppercase tracking-wide",
-                    editableAnalysis.solvency.status === "strong" ? "text-emerald-700" :
-                    editableAnalysis.solvency.status === "stable" ? "text-blue-700" : "text-amber-700"
-                  )}>Solvency</span>
+              {/* News & Solvency row */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* News */}
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Newspaper className="w-4 h-4 text-slate-500" />
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">News</span>
+                    </div>
+                    <span className="text-xs text-slate-400">+{editableAnalysis.totalNewsCount - 2} more</span>
+                  </div>
+                  <div className="p-3 space-y-2">
+                    {editableAnalysis.news.map((item, i) => (
+                      <div key={i} className="p-2 rounded-lg text-xs bg-slate-50">
+                        <div className="flex items-center gap-1.5">
+                          <div className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            item.sentiment === "positive" ? "bg-emerald-500" :
+                            item.sentiment === "negative" ? "bg-red-500" : "bg-slate-400"
+                          )} />
+                          <p className="font-medium text-slate-700 line-clamp-1">{item.headline}</p>
+                        </div>
+                        <p className="text-slate-400 mt-0.5 ml-3">{item.date}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="p-3">
-                  <p className={cn("text-lg font-bold capitalize",
-                    editableAnalysis.solvency.status === "strong" ? "text-emerald-600" :
-                    editableAnalysis.solvency.status === "stable" ? "text-blue-600" : "text-amber-600"
-                  )}>
-                    {editableAnalysis.solvency.status}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">{editableAnalysis.solvency.reason}</p>
+
+                {/* Solvency */}
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-slate-500" />
+                    <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Solvency</span>
+                  </div>
+                  <div className="p-3">
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        editableAnalysis.solvency.status === "strong" ? "bg-emerald-500" :
+                        editableAnalysis.solvency.status === "stable" ? "bg-blue-500" : "bg-amber-500"
+                      )} />
+                      <p className={cn("text-sm font-semibold capitalize",
+                        editableAnalysis.solvency.status === "strong" ? "text-emerald-600" :
+                        editableAnalysis.solvency.status === "stable" ? "text-blue-600" : "text-amber-600"
+                      )}>
+                        {editableAnalysis.solvency.status}
+                      </p>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">{editableAnalysis.solvency.reason}</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
+              </div>
+
+            {/* Right side - Contract Preview Placeholder */}
+            <div className="w-80 flex-shrink-0">
+              <div className="bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 h-full min-h-[500px] flex flex-col items-center justify-center p-6 text-center sticky top-6">
+                <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-slate-300" />
+                </div>
+                <p className="text-slate-400 font-medium mb-1">Contract Preview</p>
+                <p className="text-sm text-slate-400">Your contract will appear here once generated</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Action Bar for Analysis Phase */}
+        {phase === "analysis" && editableAnalysis && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-40">
+            <div className="max-w-5xl mx-auto px-6 py-4 flex gap-3">
               <button
                 onClick={() => { setPhase("input"); setAnalysis(null); setEditableAnalysis(null); }}
-                className="px-4 py-2.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100 rounded-xl transition-colors"
+                className="px-6 py-2.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
               >
                 Start Over
               </button>
@@ -795,7 +796,7 @@ function ContractFlowContent() {
                   setAnalysis(editableAnalysis);
                   handleGenerate();
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25 transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-all"
               >
                 Generate Contract
                 <ArrowRight className="w-4 h-4" />
@@ -809,7 +810,7 @@ function ContractFlowContent() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -824,7 +825,7 @@ function ContractFlowContent() {
                 Back to analysis
               </button>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4 shadow-sm">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4">
               <pre className="text-sm text-slate-700 whitespace-pre-wrap font-mono leading-relaxed">
                 {contract}
               </pre>
@@ -841,7 +842,7 @@ function ContractFlowContent() {
                   }
                   setShowReviewModal(true);
                 }}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 border border-purple-200 rounded-xl font-medium hover:from-purple-100 hover:to-violet-100 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-50 transition-colors"
               >
                 <Users className="w-4 h-4" />
                 Send for Review
@@ -858,7 +859,7 @@ function ContractFlowContent() {
                   }
                   setShowEmailModal(true);
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25 transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-all"
               >
                 <Mail className="w-4 h-4" />
                 Send to Customer
@@ -871,14 +872,14 @@ function ContractFlowContent() {
         {showReviewModal && analysis && company && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-              <div className="p-4 bg-gradient-to-r from-purple-500 to-violet-600 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                    <Users className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">Send for Review</h3>
-                    <p className="text-sm text-purple-100">Select reviewers for this contract</p>
+                    <h3 className="font-semibold text-slate-900">Send for Review</h3>
+                    <p className="text-sm text-slate-500">Select reviewers for this contract</p>
                   </div>
                 </div>
                 <button
@@ -886,15 +887,15 @@ function ContractFlowContent() {
                     setShowReviewModal(false);
                     setReviewSent(false);
                   }}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-slate-400" />
                 </button>
               </div>
 
               {reviewSent ? (
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/25">
+                  <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle2 className="w-8 h-8 text-white" />
                   </div>
                   <h4 className="font-semibold text-slate-900 mb-2">Review Requests Sent</h4>
@@ -911,7 +912,7 @@ function ContractFlowContent() {
                       setShowReviewModal(false);
                       setReviewSent(false);
                     }}
-                    className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-violet-700 shadow-lg shadow-purple-500/25"
+                    className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800"
                   >
                     Done
                   </button>
@@ -1072,7 +1073,7 @@ function ContractFlowContent() {
                       className={cn(
                         "flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all",
                         selectedReviewers.length > 0
-                          ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-700 hover:to-violet-700 shadow-lg shadow-purple-500/25"
+                          ? "bg-slate-900 text-white hover:bg-slate-800"
                           : "bg-slate-100 text-slate-400"
                       )}
                     >
@@ -1099,14 +1100,14 @@ function ContractFlowContent() {
         {showEmailModal && company && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-              <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">Send to Customer</h3>
-                    <p className="text-sm text-blue-100">Email the contract to {company.name}</p>
+                    <h3 className="font-semibold text-slate-900">Send to Customer</h3>
+                    <p className="text-sm text-slate-500">Email the contract to {company.name}</p>
                   </div>
                 </div>
                 <button
@@ -1114,15 +1115,15 @@ function ContractFlowContent() {
                     setShowEmailModal(false);
                     setEmailSent(false);
                   }}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-slate-400" />
                 </button>
               </div>
 
               {emailSent ? (
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/25">
+                  <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle2 className="w-8 h-8 text-white" />
                   </div>
                   <h4 className="font-semibold text-slate-900 mb-2">Email Sent Successfully</h4>
@@ -1134,7 +1135,7 @@ function ContractFlowContent() {
                       setShowEmailModal(false);
                       setEmailSent(false);
                     }}
-                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25"
+                    className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800"
                   >
                     Done
                   </button>
@@ -1216,7 +1217,7 @@ function ContractFlowContent() {
                       className={cn(
                         "flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all",
                         emailData.to && emailData.subject
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25"
+                          ? "bg-slate-900 text-white hover:bg-slate-800"
                           : "bg-slate-100 text-slate-400"
                       )}
                     >
