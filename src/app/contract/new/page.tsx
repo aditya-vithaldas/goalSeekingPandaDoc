@@ -439,10 +439,11 @@ function ContractFlowContent() {
   };
 
   const handleGenerate = () => {
-    if (!analysis || !company) return;
-    const content = generateContractContent(analysis, company, goal);
+    const analysisToUse = editableAnalysis || analysis;
+    if (!analysisToUse || !company) return;
+    const content = generateContractContent(analysisToUse, company, goal);
     setContract(content);
-    setPhase("contract");
+    setAnalysis(analysisToUse);
   };
 
   if (!company) {
@@ -462,7 +463,7 @@ function ContractFlowContent() {
     <div className="min-h-screen bg-slate-50">
       <div className={cn(
         "mx-auto px-6 py-6",
-        phase === "analysis" ? "max-w-5xl pb-24" : "max-w-2xl"
+        phase === "analysis" ? "max-w-6xl pb-24" : "max-w-2xl"
       )}>
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -498,8 +499,8 @@ function ContractFlowContent() {
                   className={cn(
                     "px-3 py-1.5 text-sm font-medium rounded-full border transition-all",
                     goal === option.goal
-                      ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                      ? "bg-amber-500 text-white border-amber-500"
+                      : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300"
                   )}
                 >
                   {option.label}
@@ -563,8 +564,8 @@ function ContractFlowContent() {
         {/* Analysis Phase */}
         {phase === "analysis" && editableAnalysis && (
           <div className="flex gap-6">
-            {/* Left side - Analysis */}
-            <div className="flex-1 space-y-3">
+            {/* Left side - Analysis (1/3 width) */}
+            <div className="w-1/3 space-y-3 flex-shrink-0">
               {/* Contract Type */}
               <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                 <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -768,14 +769,67 @@ function ContractFlowContent() {
 
               </div>
 
-            {/* Right side - Contract Preview Placeholder */}
-            <div className="w-80 flex-shrink-0">
-              <div className="bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 h-full min-h-[500px] flex flex-col items-center justify-center p-6 text-center sticky top-6">
-                <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
-                  <FileText className="w-8 h-8 text-slate-300" />
-                </div>
-                <p className="text-slate-400 font-medium mb-1">Contract Preview</p>
-                <p className="text-sm text-slate-400">Your contract will appear here once generated</p>
+            {/* Right side - Contract Preview (2/3 width) */}
+            <div className="flex-1">
+              <div className="sticky top-6">
+                {contract ? (
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-slate-500" />
+                        <span className="text-sm font-semibold text-slate-700">Contract Preview</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg font-medium hover:bg-slate-50 transition-colors">
+                          Download PDF
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (editableAnalysis) {
+                              const reviewers = getRecommendedReviewers(editableAnalysis, company!);
+                              setSelectedReviewers(reviewers.filter(r => r.required).map(r => r.id));
+                            }
+                            setShowReviewModal(true);
+                          }}
+                          className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-1"
+                        >
+                          <Users className="w-3 h-3" />
+                          Review
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (editableAnalysis && company) {
+                              const email = generateEmailSummary(editableAnalysis, company, contract, goal);
+                              setEmailData({
+                                subject: email.subject,
+                                body: email.body,
+                                to: company.contactEmail,
+                              });
+                            }
+                            setShowEmailModal(true);
+                          }}
+                          className="px-3 py-1.5 text-xs bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-1"
+                        >
+                          <Mail className="w-3 h-3" />
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-6 max-h-[600px] overflow-y-auto">
+                      <pre className="text-sm text-slate-700 whitespace-pre-wrap font-mono leading-relaxed">
+                        {contract}
+                      </pre>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 min-h-[500px] flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
+                      <FileText className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="text-slate-400 font-medium mb-1">Contract Preview</p>
+                    <p className="text-sm text-slate-400">Click "Generate Contract" to create your contract</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -784,85 +838,19 @@ function ContractFlowContent() {
         {/* Floating Action Bar for Analysis Phase */}
         {phase === "analysis" && editableAnalysis && (
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-40">
-            <div className="max-w-5xl mx-auto px-6 py-4 flex gap-3">
+            <div className="max-w-6xl mx-auto px-6 py-4 flex gap-3">
               <button
-                onClick={() => { setPhase("input"); setAnalysis(null); setEditableAnalysis(null); }}
+                onClick={() => { setPhase("input"); setAnalysis(null); setEditableAnalysis(null); setContract(""); }}
                 className="px-6 py-2.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
               >
                 Start Over
               </button>
               <button
-                onClick={() => {
-                  setAnalysis(editableAnalysis);
-                  handleGenerate();
-                }}
+                onClick={handleGenerate}
                 className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-all"
               >
-                Generate Contract
+                {contract ? "Regenerate Contract" : "Generate Contract"}
                 <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Contract Phase */}
-        {phase === "contract" && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-slate-900">Contract Ready</h2>
-                  <p className="text-xs text-slate-500">Review and send for approval</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPhase("analysis")}
-                className="text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                Back to analysis
-              </button>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4">
-              <pre className="text-sm text-slate-700 whitespace-pre-wrap font-mono leading-relaxed">
-                {contract}
-              </pre>
-            </div>
-            <div className="flex gap-3">
-              <button className="px-4 py-2.5 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl font-medium hover:bg-slate-50 transition-colors">
-                Download PDF
-              </button>
-              <button
-                onClick={() => {
-                  if (analysis) {
-                    const reviewers = getRecommendedReviewers(analysis, company!);
-                    setSelectedReviewers(reviewers.filter(r => r.required).map(r => r.id));
-                  }
-                  setShowReviewModal(true);
-                }}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-50 transition-colors"
-              >
-                <Users className="w-4 h-4" />
-                Send for Review
-              </button>
-              <button
-                onClick={() => {
-                  if (analysis && company) {
-                    const email = generateEmailSummary(analysis, company, contract, goal);
-                    setEmailData({
-                      subject: email.subject,
-                      body: email.body,
-                      to: company.contactEmail,
-                    });
-                  }
-                  setShowEmailModal(true);
-                }}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-all"
-              >
-                <Mail className="w-4 h-4" />
-                Send to Customer
               </button>
             </div>
           </div>
