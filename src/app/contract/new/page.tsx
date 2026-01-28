@@ -827,7 +827,7 @@ function ContractFlowContent() {
                       <FileText className="w-8 h-8 text-slate-300" />
                     </div>
                     <p className="text-slate-400 font-medium mb-1">Contract Preview</p>
-                    <p className="text-sm text-slate-400">Click "Generate Contract" to create your contract</p>
+                    <p className="text-sm text-slate-400">Click &quot;Generate Contract&quot; to create your contract</p>
                   </div>
                 )}
               </div>
